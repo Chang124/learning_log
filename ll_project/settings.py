@@ -134,26 +134,26 @@ LOGOUT_REDIRECT_URL = 'learning_logs:index'
 LOGIN_URL = 'accounts:login'
 
 # Platform settings
-from platformshconfig import PlatformshConfig
+import os
+from pathlib import Path
 
-config = PlatformshConfig()
-if config.is_valid_platform():
-    ALLOWED_HOSTS.append('.platform.site')
+# Allow all Upsun domains
+ALLOWED_HOSTS = ['.us-3.platformsh.site', '.platform.sh', '.platform.site', 'localhost']
 
-    if config.appDir:
-        STATIC_ROOT = Path(config.appDir) / 'static'
-    if config.projectEntropy:
-        SECRET_KEY = config.projectEntropy
+# Static files path
+STATIC_ROOT = Path(BASE_DIR) / "staticfiles"
 
-    if not config.in_build():
-        db_settings = config.credentials('database')
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': db_settings['path'],
-                'USER': db_settings['username'],
-                'PASSWORD': db_settings['password'],
-                'HOST': db_settings['host'],
-                'PORT': db_settings['port'],
-            },
-        }
+# Secret key: sinh ngẫu nhiên nếu không có
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-secret-key")
+
+# Database configuration (Upsun injects DATABASE_* env vars)
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DATABASE_PATH", "main"),
+        "USER": os.getenv("DATABASE_USERNAME", "main"),
+        "PASSWORD": os.getenv("DATABASE_PASSWORD", ""),
+        "HOST": os.getenv("DATABASE_HOST", "localhost"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
+    }
+}
